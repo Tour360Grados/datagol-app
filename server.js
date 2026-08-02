@@ -1,10 +1,19 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+
+// ESTA ES LA LÍNEA CLAVE QUE FALTABA: Permite mostrar archivos HTML, CSS y JS
+app.use(express.static(__dirname));
+
+// Ruta raíz: Carga tu quiniela automáticamente al entrar al dominio
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'analizador_quiniela.html'));
+});
 
 const API_FOOTBALL_KEY = 'ea02cef455d6cb6bb7af16c1017493e9';
 
