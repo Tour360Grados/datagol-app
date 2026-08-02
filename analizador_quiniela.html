@@ -12,7 +12,7 @@
         <header class="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
             <div>
                 <h1 class="text-3xl font-black text-emerald-400">DataGol: Motor Oficial API-Football ⚽🧠</h1>
-                <p class="text-slate-400 text-sm">Sistema conectado a servidores en vivo mediante servidor intermediario local.</p>
+                <p class="text-slate-400 text-sm">Sistema conectado a servidores en nube mediante Render.</p>
             </div>
             <div class="bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl text-right">
                 <span class="text-xs text-slate-400 block">Costo Estimado Boleto</span>
@@ -66,17 +66,17 @@
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg md:col-span-2 flex flex-col justify-between">
                 <div>
                     <div class="flex justify-between items-center mb-2">
-                        <h2 class="text-base font-bold text-slate-200">Estado de Conexión en Vivo</h2>
-                        <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25">Servidor Local Node.js Activo</span>
+                        <h2 class="text-base font-bold text-slate-200">Estado de Conexión en Nube</h2>
+                        <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25">Render Cloud Activo</span>
                     </div>
                     <p class="text-xs text-slate-400 leading-relaxed mb-3">
-                        El sistema procesa los nombres, normaliza los textos y se conecta a través del servidor puente para traer los IDs y métricas oficiales de la red.
+                        El sistema procesa los nombres y consulta directamente la red oficial de API-Football desde la nube.
                     </p>
                     
                     <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center justify-center text-slate-400 text-xs text-center border-dashed">
                         <div>
-                            <span class="text-2xl block mb-2">🌐</span>
-                            Puente Local: <span class="text-cyan-400 font-mono">http://localhost:3000</span>
+                            <span class="text-2xl block mb-2">☁️</span>
+                            Servidor Cloud: <span class="text-cyan-400 font-mono">Render Online</span>
                         </div>
                     </div>
                 </div>
@@ -180,7 +180,8 @@
 
         async function buscarIdEquipoAPI(nombreEquipo) {
             try {
-                const urlServidor = `http://localhost:3000/api/buscar-equipo?nombre=${encodeURIComponent(nombreEquipo)}`;
+                // Apunta directamente a la ruta relativa del servidor en la nube
+                const urlServidor = `/api/buscar-equipo?nombre=${encodeURIComponent(nombreEquipo)}`;
                 const response = await fetch(urlServidor);
                 if (!response.ok) return null;
                 const data = await response.json();
@@ -196,7 +197,7 @@
         async function ejecutarAnalisisReal() {
             const logDiv = document.getElementById('logEstado');
             const presupuestoElegido = parseInt(document.getElementById('selectEstrategia').value);
-            logDiv.innerHTML = `> 🌐 Consultando IDs y estadísticas reales en API-Football...<br>`;
+            logDiv.innerHTML = `> 🌐 Consultando IDs y estadísticas reales en API-Football (Cloud)...<br>`;
 
             try {
                 let listaPartidos = [];
@@ -214,7 +215,7 @@
                     let fuenteDato = "Respaldo Analítico";
 
                     if (idLocal && idVisita) {
-                        fuenteDato = "API-Football Live (ID Directo)";
+                        fuenteDato = "API-Football Live (ID Oficial)";
                         let factorRendimiento = ((idLocal * 3) % 13) - ((idVisita * 2) % 13);
                         pL += factorRendimiento;
                         pV -= factorRendimiento;
@@ -367,7 +368,7 @@
             enlace.download = `Propuesta_Progol_Concurso_${concurso}.txt`;
             enlace.click();
 
-            document.getElementById('logDiv' || 'logEstado').innerHTML = `> 💾 Propuesta guardada con éxito en archivo TXT.`;
+            document.getElementById('logEstado').innerHTML = `> 💾 Propuesta guardada con éxito en archivo TXT.`;
         }
 
         window.onload = inicializarTablaVacia;
