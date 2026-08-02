@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DataGol Pro - Conectado a API-Football Real ⚽🧠</title>
+    <title>DataGol Pro - Motor Oficial API-Football ⚽🧠</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen p-6">
@@ -12,7 +12,7 @@
         <header class="flex justify-between items-center mb-8 border-b border-slate-800 pb-4">
             <div>
                 <h1 class="text-3xl font-black text-emerald-400">DataGol: Motor Oficial API-Football ⚽🧠</h1>
-                <p class="text-slate-400 text-sm">Sistema conectado a servidores en nube mediante Render con validación cruzada.</p>
+                <p class="text-slate-400 text-sm">Sistema conectado a servidores en nube mediante Render con validación cruzada y alertas inteligentes.</p>
             </div>
             <div class="bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl text-right">
                 <span class="text-xs text-slate-400 block">Costo Estimado Boleto</span>
@@ -70,7 +70,7 @@
                         <span class="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/25">Render Cloud Activo</span>
                     </div>
                     <p class="text-xs text-slate-400 leading-relaxed mb-3">
-                        El sistema procesa ambos equipos simultáneamente para validar enfrentamientos reales mediante la API.
+                        El sistema procesa ambos equipos simultáneamente para validar enfrentamientos reales. Si el partido es muy cerrado, el sistema emitirá alertas de riesgo y recomendaciones.
                     </p>
                     
                     <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center justify-center text-slate-400 text-xs text-center border-dashed">
@@ -102,7 +102,7 @@
                             <th class="p-3 text-center">VS</th>
                             <th class="p-3">Equipo Visitante</th>
                             <th class="p-3 text-center">Pronóstico Final</th>
-                            <th class="p-3 text-center">Análisis / Confianza</th>
+                            <th class="p-3 text-center">Análisis / Confianza / Alertas</th>
                         </tr>
                     </thead>
                     <tbody id="tablaQuiniela" class="text-sm divide-y divide-slate-800/60">
@@ -132,7 +132,7 @@
                         <td class="p-3 text-center" id="pronostico_${i}">
                             <span class="inline-block px-3 py-1 bg-slate-800 text-slate-400 rounded-full text-xs font-bold">Pendiente</span>
                         </td>
-                        <td class="p-3 text-center text-xs font-mono text-slate-400" id="prob_${i}">
+                        <td class="p-3 text-left text-xs font-mono text-slate-400" id="prob_${i}">
                             ---
                         </td>
                     </tr>
@@ -188,7 +188,7 @@
                 
                 const data = await response.json();
                 if (data.response && data.response.length > 0) {
-                    return data.response[0].team.id; // Retorna el ID oficial de la API
+                    return data.response[0].team.id; 
                 }
             } catch (error) {
                 console.warn(`Error buscando enfrentamiento ${local}:`, error);
@@ -293,10 +293,13 @@
                 });
 
                 let combinacionesTotales = 1;
+                
+                // INICIO DEL CICLO CON ALERTAS INTELIGENTES
                 listaPartidos.forEach(p => {
                     let etiqueta = '';
                     let clase = '';
                     let descripcion = '';
+                    let sugerenciaAlerta = ''; // Variable para almacenar la recomendación extra
 
                     if (p.tipoAsignado === 'TRIPLE') {
                         etiqueta = 'TRIPLE (L/E/V)';
@@ -321,11 +324,24 @@
                         else clase = 'bg-blue-500/20 text-blue-400 border border-blue-500/30';
 
                         descripcion = `${p.fuente} (Fijo: ${p.top1.val.toFixed(1)}%)`;
+                        
+                        // MOTOR DE RECOMENDACIONES (Aplica solo cuando el partido queda en SIMPLE)
+                        if (p.diff12 <= 4.5) {
+                            sugerenciaAlerta = `<br><span class="text-fuchsia-400 text-xs font-bold mt-1 inline-block">💡 Sugerencia: Empate técnico detectado. Se recomienda cubrir con TRIPLE (L/E/V).</span>`;
+                        } else if (p.diff12 <= 9.0) {
+                            let r1 = p.top1.res;
+                            let r2 = p.top2.res;
+                            if (r1 + r2 === 'LV' || r1 + r2 === 'VL') {
+                                if (p.E >= p.V) { r1 = 'L'; r2 = 'E'; } else { r1 = 'E'; r2 = 'V'; }
+                            }
+                            sugerenciaAlerta = `<br><span class="text-orange-400 text-xs font-bold mt-1 inline-block">💡 Sugerencia: Partido volátil. Considerar proteger con DOBLE (${r1}/${r2}).</span>`;
+                        }
                     }
 
                     document.getElementById(`pronostico_${p.index}`).innerHTML = `<span class="px-3 py-1 rounded-full text-xs font-bold ${clase}">${etiqueta}</span>`;
-                    document.getElementById(`prob_${p.index}`).innerHTML = `${descripcion}`;
+                    document.getElementById(`prob_${p.index}`).innerHTML = `${descripcion}${sugerenciaAlerta}`;
                 });
+                // FIN DEL CICLO CON ALERTAS
 
                 const costoReal = combinacionesTotales * 15;
                 document.getElementById('lblCostoTotal').innerText = `$${costoReal} MXN`;
@@ -354,12 +370,12 @@
                 const local = document.getElementById(`local_${i}`).value.trim();
                 const visitante = document.getElementById(`visitante_${i}`).value.trim();
                 const pronosticoElem = document.getElementById(`pronostico_${i}`).innerText;
-                const analisisElem = document.getElementById(`prob_${i}`).innerText;
+                const analisisElem = document.getElementById(`prob_${i}`).innerText; // Capturará las sugerencias de texto también
 
                 if (local && visitante) {
                     contenidoTxt += `Casilla #${i}: ${local} vs ${visitante}\n`;
                     contenidoTxt += `  -> Pronóstico: ${pronosticoElem}\n`;
-                    contenidoTxt += `  -> Análisis: ${analisisElem}\n\n`;
+                    contenidoTxt += `  -> Análisis: ${analisisElem.replace(/\n/g, ' ')}\n\n`;
                 }
             }
 
