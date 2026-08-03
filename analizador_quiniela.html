@@ -208,11 +208,9 @@
                     
                     if(localInput.length === 0 || visitanteInput.length === 0) continue; 
 
-                    // Búsqueda inteligente de IDs con match flexible en servidor
                     const idLocal = await buscarIdEquipoAPI(localInput);
                     const idVisita = await buscarIdEquipoAPI(visitanteInput);
 
-                    // Simulación ponderada avanzada basada en los IDs reales obtenidos
                     let pL = 42, pE = 26, pV = 32;
                     let fuenteDato = "API-Football (Modelo Ponderado)";
 
@@ -223,7 +221,6 @@
                         let balanceTablas = (idLocal + idVisita) % 7;
                         pE += (balanceTablas - 3);
                     } else {
-                        // Respaldo matemático si algún equipo no respondiera
                         let hL = localInput.length * 3;
                         let hV = visitanteInput.length * 3;
                         pL = 40 + (hL % 8);
@@ -306,10 +303,7 @@
                     } else if (p.tipoAsignado === 'DOBLE') {
                         let r1 = p.top1.res;
                         let r2 = p.top2.res;
-                        if (r1 + r2 === 'LV' || r1 + r2 === 'VL') {
-                            if (p.E >= p.V) { r1 = 'L'; r2 = 'E'; }
-                            else { r1 = 'E'; r2 = 'V'; }
-                        }
+                        
                         etiqueta = `DOBLE (${r1}/${r2})`;
                         clase = 'bg-orange-500/20 text-orange-400 border border-orange-500/30';
                         descripcion = `${p.fuente} | ⚡ Doble Protegido`;
@@ -327,9 +321,6 @@
                         } else if (p.diff12 <= 9.0) {
                             let r1 = p.top1.res;
                             let r2 = p.top2.res;
-                            if (r1 + r2 === 'LV' || r1 + r2 === 'VL') {
-                                if (p.E >= p.V) { r1 = 'L'; r2 = 'E'; } else { r1 = 'E'; r2 = 'V'; }
-                            }
                             sugerenciaAlerta = `<br><span class="text-orange-400 text-xs font-bold mt-1 inline-block">💡 Sugerencia: Alta volatilidad. Considerar DOBLE (${r1}/${r2}).</span>`;
                         }
                     }
